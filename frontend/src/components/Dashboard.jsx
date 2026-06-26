@@ -43,7 +43,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Inline Bucket Management States
   const [addingBucketAccountId, setAddingBucketAccountId] = useState(null);
@@ -221,7 +220,6 @@ export default function Dashboard() {
   // Post Transaction Handler
   const handleTxSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     try {
       const payload = {
         title: txForm.title,
@@ -238,7 +236,7 @@ export default function Dashboard() {
 
       console.log("Sending Payload:", payload);
 
-      await axios.post(`${API_BASE}/transactions`, payload, { timeout: 8000 });
+      await axios.post(`${API_BASE}/transactions`, payload);
       triggerToast('Transaction posted successfully!');
       setShowTxModal(false);
       // Reset Form
@@ -253,8 +251,6 @@ export default function Dashboard() {
       fetchData();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to post transaction.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -444,6 +440,16 @@ export default function Dashboard() {
     return false;
   };
 
+  // Calculation of Base balance metrics
+  const totalBankBalance = accounts.reduce((sum, acc) => sum + (acc.actualBankBalance || 0), 0);
+  const totalFreeSpend = categories
+    .filter(c => {
+      const nameMatch = c.name && c.name.toLowerCase().includes('free spend');
+      const roleMatch = c.systemRole === 'b1_free_spend' || c.systemRole === 'b2_free_spend';
+      return (nameMatch || roleMatch) && c.modelType === 'BUCKET';
+    })
+    .reduce((sum, c) => sum + (c.currentAllocatedBalance || 0), 0);
+  const baseBalance = totalBankBalance - totalFreeSpend;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 relative">
@@ -549,6 +555,27 @@ export default function Dashboard() {
           >
             Jump to Today
           </button>
+        </div>
+      </div>
+
+      {/* Base Balance Metric Container */}
+      <div className="w-full bg-gradient-to-r from-slate-900/90 to-indigo-950/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-slate-800/80 shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors duration-300"></div>
+        <div>
+          <div className="flex items-center gap-2 text-indigo-400 mb-1">
+            <Layers className="w-4 h-4" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Metrics</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Base</h2>
+          <p className="text-slate-400 text-xs mt-0.5">Total bank balance minus Free Spend buckets</p>
+        </div>
+        <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-slate-800 pt-3 sm:pt-0">
+          <div className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-150 to-indigo-350 tracking-tight">
+            {formatCurrency(baseBalance)}
+          </div>
+          <div className="text-[10px] sm:text-xs text-slate-500 font-medium mt-1">
+            Allocated: {formatCurrency(totalFreeSpend)} / Total: {formatCurrency(totalBankBalance)}
+          </div>
         </div>
       </div>
 
@@ -1258,14 +1285,14 @@ export default function Dashboard() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isTxFormInvalid() || isSubmitting}
+                  disabled={isTxFormInvalid()}
                   className={`w-full font-bold text-base sm:text-sm h-12 rounded-lg shadow-lg transition-all ${
-                    (isTxFormInvalid() || isSubmitting)
+                    isTxFormInvalid()
                       ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                       : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white active:scale-95'
                   }`}
                 >
-                  {isSubmitting ? 'Processing...' : 'Record'}
+                  Record
                 </button>
               </div>
             </form>

@@ -74,29 +74,6 @@ export async function postTransaction(req, res) {
       return res.status(400).json({ error: 'Amount must be a positive number' });
     }
 
-    // Idempotency Check: search for exact duplicate created within the last 15 seconds
-    const duplicateQuery = {
-      title,
-      amount: txAmount,
-      type,
-      createdAt: { $gte: new Date(Date.now() - 15000) }
-    };
-    if (sourceCategory) {
-      duplicateQuery.sourceCategory = sourceCategory;
-    } else {
-      duplicateQuery.sourceCategory = { $in: [null, undefined] };
-    }
-    if (destCategory) {
-      duplicateQuery.destCategory = destCategory;
-    } else {
-      duplicateQuery.destCategory = { $in: [null, undefined] };
-    }
-
-    const duplicateTx = await Transaction.findOne(duplicateQuery);
-    if (duplicateTx) {
-      return res.status(409).json({ error: 'Duplicate transaction detected. Please wait a moment.' });
-    }
-
     const calculatedCycle = getCycleString(date);
 
     const result = await executeTransaction(async (session) => {

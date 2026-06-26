@@ -43,15 +43,6 @@ async function runRegressionSuite() {
     // Wait a brief moment for database connection and seeding to finish
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // To align with the zero-balance production initialization seeder, we manually inject test funds for the regression test
-    await Account.updateOne({ type: 'INCOME_VAULT' }, { $set: { balance: 10000, actualBankBalance: 10000 } });
-    await Account.updateOne({ type: 'EXPENSE_WALLET' }, { $set: { balance: 3000, actualBankBalance: 3000 } });
-    await Category.updateOne({ systemRole: 'emergency' }, { $set: { currentAllocatedBalance: 5000, allocatedBalance: 5000 } });
-    await Category.updateOne({ systemRole: 'investment' }, { $set: { currentAllocatedBalance: 2000, allocatedBalance: 2000 } });
-    await Category.updateOne({ systemRole: 'b1_free_spend' }, { $set: { currentAllocatedBalance: 3000, allocatedBalance: 3000 } });
-    await Category.updateOne({ systemRole: 'monthly_expense' }, { $set: { currentAllocatedBalance: 1000, allocatedBalance: 1000 } });
-    await Category.updateOne({ systemRole: 'b2_free_spend' }, { $set: { currentAllocatedBalance: 1000, allocatedBalance: 1000 } });
-
     // --------------------------------------------------------
     // PHASE 1: Architecture & Seeding
     // --------------------------------------------------------
