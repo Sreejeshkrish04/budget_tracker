@@ -440,16 +440,7 @@ export default function Dashboard() {
     return false;
   };
 
-  // Calculation of Base balance metrics
-  const totalBankBalance = accounts.reduce((sum, acc) => sum + (acc.actualBankBalance || 0), 0);
-  const totalFreeSpend = categories
-    .filter(c => {
-      const nameMatch = c.name && c.name.toLowerCase().includes('free spend');
-      const roleMatch = c.systemRole === 'b1_free_spend' || c.systemRole === 'b2_free_spend';
-      return (nameMatch || roleMatch) && c.modelType === 'BUCKET';
-    })
-    .reduce((sum, c) => sum + (c.currentAllocatedBalance || 0), 0);
-  const baseBalance = totalBankBalance - totalFreeSpend;
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 relative">
@@ -558,32 +549,23 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Base Balance Metric Container */}
-      <div className="w-full bg-gradient-to-r from-slate-900/90 to-indigo-950/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-slate-800/80 shadow-xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors duration-300"></div>
-        <div>
-          <div className="flex items-center gap-2 text-indigo-400 mb-1">
-            <Layers className="w-4 h-4" />
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Metrics</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Base</h2>
-          <p className="text-slate-400 text-xs mt-0.5">Total bank balance minus Free Spend buckets</p>
-        </div>
-        <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-slate-800 pt-3 sm:pt-0">
-          <div className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-150 to-indigo-350 tracking-tight">
-            {formatCurrency(baseBalance)}
-          </div>
-          <div className="text-[10px] sm:text-xs text-slate-500 font-medium mt-1">
-            Allocated: {formatCurrency(totalFreeSpend)} / Total: {formatCurrency(totalBankBalance)}
-          </div>
-        </div>
-      </div>
+
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {accounts.map(acc => {
           const accCategories = getAccountCategories(acc._id);
           const calculatedBankTotal = accCategories.reduce((sum, bucket) => sum + (bucket.currentAllocatedBalance || 0), 0);
+          
+          // Find Free Spend for current account
+          const freeSpendCategory = accCategories.find(c => {
+            const nameMatch = c.name && c.name.toLowerCase().includes('free spend');
+            const roleMatch = c.systemRole === 'b1_free_spend' || c.systemRole === 'b2_free_spend';
+            return nameMatch || roleMatch;
+          });
+          const accountFreeSpend = freeSpendCategory ? (freeSpendCategory.currentAllocatedBalance || 0) : 0;
+          const accountBase = (acc.actualBankBalance || 0) - accountFreeSpend;
+
           return (
             <div key={acc._id} className="glass-panel p-4 sm:p-6 relative overflow-hidden group flex flex-col justify-between">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-300"></div>
@@ -597,6 +579,9 @@ export default function Dashboard() {
                 <h3 className="text-xs sm:text-sm font-semibold text-slate-400">{acc.name}</h3>
                 <div className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">
                   {formatCurrency(calculatedBankTotal)}
+                </div>
+                <div className="text-sm text-indigo-300 mt-2 font-medium bg-slate-800/50 inline-block px-3 py-1 rounded-md">
+                  Base (Unallocated): {formatCurrency(accountBase)}
                 </div>
 
                  {/* Visual Breakdown of Internal Buckets */}
