@@ -139,97 +139,97 @@ export default function AnalyticsDashboard() {
     <div className="space-y-8 animate-fade-in">
       {/* View Mode Toggle Pill Switch */}
       <div className="flex justify-center mb-6">
-        <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-full flex items-center relative z-10 shadow-inner">
+        <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-full flex items-center w-full max-w-sm sm:w-auto relative z-10 shadow-inner">
           <button
             onClick={() => setViewMode('cycle')}
-            className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 uppercase tracking-wider flex items-center gap-2 ${
+            className={`flex-1 sm:flex-initial justify-center px-4 sm:px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap active:scale-95 ${
               viewMode === 'cycle'
-                ? 'bg-gradient-to-r from-indigo-650 to-purple-650 text-white shadow-md active:scale-95'
+                ? 'bg-gradient-to-r from-indigo-650 to-purple-650 text-white shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
             Filter by Cycle
           </button>
           <button
             onClick={() => setViewMode('custom')}
-            className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 uppercase tracking-wider flex items-center gap-2 ${
+            className={`flex-1 sm:flex-initial justify-center px-4 sm:px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 uppercase tracking-wider flex items-center gap-2 whitespace-nowrap active:scale-95 ${
               viewMode === 'custom'
-                ? 'bg-gradient-to-r from-indigo-650 to-purple-650 text-white shadow-md active:scale-95'
+                ? 'bg-gradient-to-r from-indigo-650 to-purple-650 text-white shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Calendar className="w-3.5 h-3.5" />
-            Custom Date Range
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
+            Custom Range
           </button>
         </div>
       </div>
 
       {/* Navigation Widget */}
-      <div className="glass-panel p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2 text-indigo-400">
-          <Calendar className="w-5 h-5" />
+      <div className="glass-panel p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-2 text-indigo-400 self-start md:self-auto">
+          <Calendar className="w-5 h-5 shrink-0" />
           <span className="font-semibold text-sm tracking-wide uppercase">
             {viewMode === 'cycle' ? 'Analytics Cycle Window' : 'Custom Date Range'}
           </span>
         </div>
         
         {viewMode === 'cycle' ? (
-          <>
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
               <button 
                 onClick={handlePrevCycle}
-                className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
+                className="p-3 sm:p-2 bg-slate-800/80 hover:bg-slate-700 active:bg-slate-700/60 text-slate-300 rounded-xl transition-all border border-slate-850 h-11 w-11 flex items-center justify-center shrink-0"
                 title="Previous Cycle"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
-              <div className="text-center">
-                <div className="font-bold text-base text-white">
+              <div className="text-center min-w-0">
+                <div className="font-bold text-sm sm:text-base text-white truncate">
                   {formatDate(startDate)} &ndash; {formatDate(endDate)}
                 </div>
-                <div className="text-xs text-slate-400 font-mono mt-0.5">
+                <div className="text-[10px] text-slate-450 font-mono mt-0.5 truncate">
                   ID: {currentCycleString}
                 </div>
               </div>
               
               <button 
                 onClick={handleNextCycle}
-                className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
+                className="p-3 sm:p-2 bg-slate-800/80 hover:bg-slate-700 active:bg-slate-700/60 text-slate-300 rounded-xl transition-all border border-slate-850 h-11 w-11 flex items-center justify-center shrink-0"
                 title="Next Cycle"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
-            <div>
+            <div className="shrink-0 text-right w-full sm:w-auto">
               <button
                 onClick={handleResetToCurrent}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium underline"
+                className="text-xs text-indigo-400 hover:text-indigo-350 active:text-indigo-400 font-semibold underline block sm:inline py-1 text-center w-full"
               >
                 Jump to Today
               </button>
             </div>
-          </>
+          </div>
         ) : (
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="flex items-center gap-2.5">
-              <label className="text-xs font-semibold text-slate-450 uppercase tracking-wider font-mono">Start:</label>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <label className="text-xs font-semibold text-slate-450 uppercase tracking-wider font-mono shrink-0 w-10 sm:w-auto">Start:</label>
               <input 
                 type="date"
                 value={customStartDate}
                 onChange={e => setCustomStartDate(e.target.value)}
-                className="bg-slate-800 border border-slate-750 rounded-lg py-1.5 px-3 text-white text-sm font-mono focus:outline-none focus:border-indigo-500 transition-all"
+                className="bg-slate-800 border border-slate-750 focus:border-indigo-500 rounded-xl h-11 px-3 text-white text-sm font-mono focus:outline-none transition-colors w-full sm:w-auto"
               />
             </div>
-            <div className="flex items-center gap-2.5">
-              <label className="text-xs font-semibold text-slate-455 uppercase tracking-wider font-mono">End:</label>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <label className="text-xs font-semibold text-slate-455 uppercase tracking-wider font-mono shrink-0 w-10 sm:w-auto">End:</label>
               <input 
                 type="date"
                 value={customEndDate}
                 onChange={e => setCustomEndDate(e.target.value)}
-                className="bg-slate-800 border border-slate-750 rounded-lg py-1.5 px-3 text-white text-sm font-mono focus:outline-none focus:border-indigo-500 transition-all"
+                className="bg-slate-800 border border-slate-750 focus:border-indigo-500 rounded-xl h-11 px-3 text-white text-sm font-mono focus:outline-none transition-colors w-full sm:w-auto"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Dual Visualizer Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Income Breakdown Card */}
             <div className="glass-panel p-4 sm:p-6 flex flex-col justify-between">
@@ -313,23 +313,23 @@ export default function AnalyticsDashboard() {
                 {reportData.incomeBreakdown.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 min-h-[300px]">
                     <AlertCircle className="w-12 h-12 text-slate-500 mb-4 animate-pulse" />
-                    <h4 className="text-base font-bold text-slate-300">No income logged for this cycle</h4>
+                    <h4 className="text-base font-bold text-slate-300">No income allocated for this cycle</h4>
                     <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Income transactions recorded in this cycle will automatically group and show here as a visual breakdown.
+                      Incomes allocated to your bank categories in this cycle will display here as a visual breakdown.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     {/* Recharts Pie Chart */}
-                    <div className="h-[300px]">
+                    <div className="h-[280px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={reportData.incomeBreakdown}
                             cx="50%"
                             cy="50%"
-                            innerRadius={50}
-                            outerRadius={75}
+                            innerRadius={42}
+                            outerRadius={68}
                             paddingAngle={4}
                             dataKey="amount"
                             nameKey="categoryName"
@@ -415,15 +415,15 @@ export default function AnalyticsDashboard() {
                 ) : (
                   <div className="space-y-6">
                     {/* Recharts Pie Chart */}
-                    <div className="h-[300px]">
+                    <div className="h-[280px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={reportData.expenseBreakdown}
                             cx="50%"
                             cy="50%"
-                            innerRadius={50}
-                            outerRadius={75}
+                            innerRadius={42}
+                            outerRadius={68}
                             paddingAngle={4}
                             dataKey="amount"
                             nameKey="categoryName"
