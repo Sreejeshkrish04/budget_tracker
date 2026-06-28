@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar, 
-  Plus, 
-  RefreshCw, 
-  Wallet, 
-  Layers, 
-  Percent, 
-  Compass, 
+import {
+  TrendingUp,
+  TrendingDown,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Plus,
+  RefreshCw,
+  Wallet,
+  Layers,
+  Percent,
+  Compass,
   DollarSign,
   AlertCircle,
   Trash2
@@ -32,10 +32,10 @@ const getLocalDateString = () => {
 export default function Dashboard() {
   // Date State for cycle shifting
   const [viewDate, setViewDate] = useState(new Date());
-  
+
   // Navigation View State ('budget' or 'analytics')
   const [currentView, setCurrentView] = useState('budget');
-  
+
   // App Data State
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -431,7 +431,7 @@ export default function Dashboard() {
     if (txForm.type === 'TRANSFER') {
       if (!txForm.sourceCategory || !txForm.destCategory) return true;
       if (txForm.sourceCategory === txForm.destCategory) return true;
-      
+
       const srcBucket = categories.find(c => c._id === txForm.sourceCategory);
       if (srcBucket && txForm.amount && srcBucket.currentAllocatedBalance < Number(txForm.amount)) {
         return true;
@@ -444,7 +444,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 relative">
-      
+
       {/* Toast Notification */}
       {successMsg && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2 bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-2xl shadow-emerald-500/20 border border-emerald-400/30 animate-bounce">
@@ -461,7 +461,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-slate-450 text-xs sm:text-sm mt-1">Multi-Bucket Personal Ledger & Rollover Engine</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
           <button
             onClick={() => setShowTxModal(true)}
@@ -483,21 +483,19 @@ export default function Dashboard() {
       <div className="flex border-b border-slate-800 mb-6 w-full">
         <button
           onClick={() => setCurrentView('budget')}
-          className={`flex-1 py-3.5 px-4 text-center text-base sm:text-sm font-semibold border-b-2 transition-all ${
-            currentView === 'budget'
+          className={`flex-1 py-3.5 px-4 text-center text-base sm:text-sm font-semibold border-b-2 transition-all ${currentView === 'budget'
               ? 'border-indigo-500 text-white font-bold'
               : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           Budget Planner
         </button>
         <button
           onClick={() => setCurrentView('analytics')}
-          className={`flex-1 py-3.5 px-4 text-center text-base sm:text-sm font-semibold border-b-2 transition-all ${
-            currentView === 'analytics'
+          className={`flex-1 py-3.5 px-4 text-center text-base sm:text-sm font-semibold border-b-2 transition-all ${currentView === 'analytics'
               ? 'border-indigo-500 text-white font-bold'
               : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+            }`}
         >
           Visual Analytics
         </button>
@@ -506,530 +504,527 @@ export default function Dashboard() {
       {currentView === 'budget' ? (
         <>
           {/* Cycle Navigation Widget */}
-      <div className="glass-panel p-4 mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-2 text-indigo-400">
-          <Calendar className="w-5 h-5" />
-          <span className="font-semibold text-sm tracking-wide uppercase">Cycle Window</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={handlePrevCycle}
-            className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
-            title="Previous Cycle"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          
-          <div className="text-center">
-            <div className="font-bold text-base text-white">
-              {formatDate(startDate)} &ndash; {formatDate(endDate)}
-            </div>
-            <div className="text-xs text-slate-400 font-mono mt-0.5">
-              ID: {currentCycleString}
-            </div>
-          </div>
-          
-          <button 
-            onClick={handleNextCycle}
-            className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
-            title="Next Cycle"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div>
-          <button
-            onClick={handleResetToCurrent}
-            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium underline"
-          >
-            Jump to Today
-          </button>
-        </div>
-      </div>
-
-
-
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {accounts.map(acc => {
-          const accCategories = getAccountCategories(acc._id);
-          const calculatedBankTotal = accCategories.reduce((sum, bucket) => sum + (bucket.currentAllocatedBalance || 0), 0);
-          
-          // Find Free Spend for current account
-          const freeSpendCategory = accCategories.find(c => {
-            const nameMatch = c.name && c.name.toLowerCase().includes('free spend');
-            const roleMatch = c.systemRole === 'b1_free_spend' || c.systemRole === 'b2_free_spend';
-            return nameMatch || roleMatch;
-          });
-          const accountFreeSpend = freeSpendCategory ? (freeSpendCategory.currentAllocatedBalance || 0) : 0;
-          const accountBase = (acc.actualBankBalance || 0) - accountFreeSpend;
-
-          return (
-            <div key={acc._id} className="glass-panel p-4 sm:p-6 relative overflow-hidden group flex flex-col justify-between">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-300"></div>
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-400 uppercase bg-slate-950/60 px-2.5 py-1 rounded-full border border-slate-800">
-                    {acc.type === 'INCOME_VAULT' ? 'Bank 1 (Income Vault)' : 'Bank 2 (Expense Wallet)'}
-                  </span>
-                  <Wallet className="w-5 h-5 text-indigo-400" />
-                </div>
-                <h3 className="text-xs sm:text-sm font-semibold text-slate-400">{acc.name}</h3>
-                <div className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">
-                  {formatCurrency(calculatedBankTotal)}
-                </div>
-                <div className="text-sm text-indigo-300 mt-2 font-medium bg-slate-800/50 inline-block px-3 py-1 rounded-md">
-                  Base (Unallocated): {formatCurrency(accountBase)}
-                </div>
-
-                 {/* Visual Breakdown of Internal Buckets */}
-                <div className="mt-6 border-t border-slate-850 pt-4 space-y-2 relative z-10">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Internal Buckets</h4>
-                  </div>
-                  {accCategories.length === 0 ? (
-                    <p className="text-xs text-slate-650 italic">No buckets mapped to this bank.</p>
-                  ) : (
-                    accCategories.map(cat => {
-                      const isEditing = editingBucketId === cat._id;
-                      return (
-                        <div key={cat._id} className="flex justify-between items-center text-xs py-1.5 px-2.5 rounded-lg bg-slate-950/40 border border-slate-800/40">
-                          {isEditing ? (
-                            <div className="flex flex-col gap-2 w-full py-1">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={editBucketName}
-                                  onChange={e => setEditBucketName(e.target.value)}
-                                  className="bg-slate-900 border border-slate-700 text-white rounded px-2 py-0.5 w-full text-xs focus:outline-none focus:border-indigo-500"
-                                  autoFocus
-                                />
-                              </div>
-                              <div className="flex items-center gap-2 text-slate-300">
-                                <input
-                                  type="checkbox"
-                                  id={`edit-hasTarget-${cat._id}`}
-                                  checked={editBucketHasTarget}
-                                  onChange={e => {
-                                    setEditBucketHasTarget(e.target.checked);
-                                    if (!e.target.checked) setEditBucketTargetGoal('');
-                                  }}
-                                  className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                                />
-                                <label htmlFor={`edit-hasTarget-${cat._id}`} className="text-[10px] font-semibold select-none cursor-pointer">
-                                  Set a savings target
-                                </label>
-                              </div>
-                              {editBucketHasTarget && (
-                                <div>
-                                  <input
-                                    type="number"
-                                    placeholder="Target Goal (₹)"
-                                    value={editBucketTargetGoal}
-                                    onChange={e => setEditBucketTargetGoal(e.target.value)}
-                                    className="bg-slate-900 border border-slate-700 text-white rounded px-2 py-0.5 w-full text-xs focus:outline-none focus:border-indigo-500"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800/60">
-                                <button
-                                  onClick={() => setEditingBucketId(null)}
-                                  className="text-slate-400 hover:text-slate-350 font-bold px-2 py-0.5 text-xs"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  onClick={() => handleSaveInlineEdit(cat._id)}
-                                  className="text-emerald-400 hover:text-emerald-350 font-bold px-2 py-0.5 text-xs"
-                                >
-                                  Save
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-slate-200">{cat.name}</span>
-                                {cat.isPermanent && (
-                                  <span className="text-[9px] bg-indigo-500/15 text-indigo-300 font-bold px-1.5 py-0.5 rounded border border-indigo-500/20">
-                                    System
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3">
-                                {(() => {
-                                  const balance = Number(cat.currentAllocatedBalance) || 0;
-                                  const target = Number(cat.targetGoal) || 0;
-                                  return cat.hasTarget ? (
-                                    <span className={`font-bold ${balance < target ? 'text-red-400' : 'text-green-400'}`}>
-                                      {formatCurrency(balance)} / {formatCurrency(target)}
-                                    </span>
-                                  ) : (
-                                    <span className="font-bold text-slate-100">{formatCurrency(balance)}</span>
-                                  );
-                                })()}
-                                  <div className="flex items-center gap-1.5 opacity-65 hover:opacity-100 transition-opacity">
-                                    <button
-                                      onClick={() => {
-                                        setEditingBucketId(cat._id);
-                                        setEditBucketName(cat.name);
-                                        setEditBucketHasTarget(cat.hasTarget || false);
-                                        setEditBucketTargetGoal(cat.targetGoal || '');
-                                      }}
-                                      className="text-indigo-400 hover:text-indigo-300 text-[10px] font-bold"
-                                      title="Edit bucket name"
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                                      className="text-slate-500 hover:text-red-400"
-                                      title={`Delete ${cat.name}`}
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-
-                  {/* Add Inline Custom Bucket Form */}
-                  {addingBucketAccountId === acc._id ? (
-                    <div className="mt-2.5 p-3 bg-slate-900/60 border border-slate-800 rounded-lg space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Bucket Name"
-                          value={newBucketName}
-                          onChange={e => setNewBucketName(e.target.value)}
-                          className="bg-slate-950 border border-slate-850 text-white rounded px-2 py-1 w-full text-xs focus:outline-none focus:border-indigo-500"
-                          autoFocus
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <input
-                          type="checkbox"
-                          id={`hasTarget-${acc._id}`}
-                          checked={newBucketHasTarget}
-                          onChange={e => {
-                            setNewBucketHasTarget(e.target.checked);
-                            if (!e.target.checked) setNewBucketTargetGoal('');
-                          }}
-                          className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                        />
-                        <label htmlFor={`hasTarget-${acc._id}`} className="text-[10px] font-semibold select-none cursor-pointer">
-                          Set a savings target
-                        </label>
-                      </div>
-                      {newBucketHasTarget && (
-                        <div>
-                          <input
-                            type="number"
-                            placeholder="Target Goal (₹)"
-                            value={newBucketTargetGoal}
-                            onChange={e => setNewBucketTargetGoal(e.target.value)}
-                            className="bg-slate-950 border border-slate-850 text-white rounded px-2 py-1 w-full text-xs focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                      )}
-                      <div className="flex justify-end gap-2 pt-1 border-t border-slate-800/60">
-                        <button
-                          onClick={() => setAddingBucketAccountId(null)}
-                          className="text-slate-400 hover:text-slate-200 text-xs font-semibold px-2 py-1"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => handleCreateInlineBucket(acc._id, acc.type)}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setAddingBucketAccountId(acc._id);
-                        setNewBucketName('');
-                        setNewBucketHasTarget(false);
-                        setNewBucketTargetGoal('');
-                      }}
-                      className="w-full mt-2 py-1.5 border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/10 hover:bg-slate-900/40 text-slate-400 hover:text-slate-300 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1"
-                    >
-                      <Plus className="w-3 h-3" /> Add Custom Bucket
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Split Layout: Categories & Cumulative savings */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Side: Targets & Categories (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-indigo-400" /> Category Budgets
-            </h2>
-          </div>
-
-          {loading ? (
-            <div className="glass-panel p-12 text-center text-slate-400">
-              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-indigo-500" />
-              Loading cycle records...
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {expenseCategories.map(cat => {
-                const spent = getCategorySpending(cat._id);
-                const limit = cat.monthlyBudgetLimit;
-                const percent = limit > 0 ? (spent / limit) * 100 : 0;
-                
-                // Determine styling classes based on budget conditions
-                const isOverBudget = spent > limit;
-                
-                // USER SPECIFIED CLASSES FOR OVER/UNDER LIMIT
-                const indicatorClasses = isOverBudget
-                  ? 'text-red-600 bg-red-50 border-red-500'
-                  : 'text-green-600 bg-green-50 border-green-500';
-
-                return (
-                  <div 
-                    key={cat._id} 
-                    className={`p-4 sm:p-5 rounded-xl border flex flex-col justify-between transition-all duration-300 ${indicatorClasses}`}
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-2 gap-2">
-                        <span className="font-bold text-sm sm:text-base leading-tight">{cat.name}</span>
-                        <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-black/5 shrink-0">
-                          Limit: {formatCurrency(limit)}
-                        </span>
-                      </div>
-                      
-                      <div className="text-xl sm:text-2xl font-extrabold tracking-tight mb-3">
-                        {formatCurrency(spent)} <span className="text-xs font-normal opacity-85">spent</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      {/* Progress Bar */}
-                      <div className="w-full bg-black/10 rounded-full h-2 mb-2 overflow-hidden">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${isOverBudget ? 'bg-red-600' : 'bg-green-600'}`}
-                          style={{ width: `${Math.min(100, percent)}%` }}
-                        ></div>
-                      </div>
-                      
-                      <div className="flex justify-between text-[11px] font-semibold opacity-85">
-                        <span>{percent.toFixed(0)}% Cap</span>
-                        <span>
-                          {isOverBudget 
-                            ? `Over by ${formatCurrency(spent - limit)}` 
-                            : `Left: ${formatCurrency(limit - spent)}`
-                          }
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Right Side: Category Manager (1/3 width) */}
-        <div>
-          <div className="glass-panel p-4 sm:p-6 h-full flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none"></div>
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-purple-400" /> Category Manager
-                </h2>
-              </div>
-
-              {/* List of Categories in Manager */}
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-                {categories.filter(c => c.modelType === 'EXPENSE_TRACKER').map(cat => {
-                  const isPermanent = cat.isPermanent;
-                  return (
-                    <div key={cat._id} className={`p-4 border rounded-xl transition-all duration-300 ${
-                      isPermanent ? 'border-slate-800 bg-slate-900/30' : 'border-indigo-500/20 bg-indigo-950/5'
-                    }`}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-bold text-sm text-slate-200 block">{cat.name}</span>
-                          <span className="text-[10px] text-slate-400 uppercase font-mono block">
-                            Type: {cat.type} | {isPermanent ? 'Permanent' : 'Custom'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleStartEdit(cat)}
-                            className="text-indigo-400 hover:text-indigo-300 p-1 rounded text-xs transition-colors font-bold"
-                            title="Edit"
-                          >
-                            Edit
-                          </button>
-                          {!isPermanent && (
-                            <button
-                              onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                              className="text-slate-500 hover:text-red-400 p-1 rounded transition-colors"
-                              title={`Delete ${cat.name}`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {cat.monthlyBudgetLimit > 0 && (
-                        <div className="text-xs text-slate-400 mt-1 font-semibold">
-                          Limit: {formatCurrency(cat.monthlyBudgetLimit)}
-                        </div>
-                      )}
-                      {cat.targetGoal > 0 && (
-                        <div className="text-xs text-slate-400 mt-1 font-semibold">
-                          Goal: {formatCurrency(cat.targetGoal)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          <div className="glass-panel p-4 mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2 text-indigo-400">
+              <Calendar className="w-5 h-5" />
+              <span className="font-semibold text-sm tracking-wide uppercase">Cycle Window</span>
             </div>
 
-            <div className="mt-6">
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setShowAddCategoryModal(true)}
-                className="w-full bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-650 hover:to-indigo-650 text-white font-bold text-base sm:text-sm h-12 rounded-xl transition-all duration-200"
+                onClick={handlePrevCycle}
+                className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
+                title="Previous Cycle"
               >
-                + Add Custom Category
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="text-center">
+                <div className="font-bold text-base text-white">
+                  {formatDate(startDate)} &ndash; {formatDate(endDate)}
+                </div>
+                <div className="text-xs text-slate-400 font-mono mt-0.5">
+                  ID: {currentCycleString}
+                </div>
+              </div>
+
+              <button
+                onClick={handleNextCycle}
+                className="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-800"
+                title="Next Cycle"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <button
+                onClick={handleResetToCurrent}
+                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium underline"
+              >
+                Jump to Today
               </button>
             </div>
           </div>
-        </div>
 
-      </div>
 
-      {/* Transaction History Table */}
-      <div className="glass-panel p-4 sm:p-6 mt-8">
-        <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white mb-6 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-400" /> Transaction Stream for Cycle
-        </h2>
 
-        {transactions.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 border border-dashed border-slate-800 rounded-xl">
-            No transactions found in this billing cycle.
-          </div>
-        ) : (
-          <>
-            {/* Mobile Stacked Summary List (Visible only on mobile) */}
-            <div className="space-y-3 sm:hidden">
-              {transactions.map(tx => {
-                let typeColor = 'text-indigo-400';
-                if (tx.type === 'INCOME') typeColor = 'text-emerald-400';
-                if (tx.type === 'EXPENSE') typeColor = 'text-red-400';
+          {/* Main Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {accounts.map(acc => {
+              const accCategories = getAccountCategories(acc._id);
+              const calculatedBankTotal = accCategories.reduce((sum, bucket) => sum + (bucket.currentAllocatedBalance || 0), 0);
 
-                return (
-                  <div key={tx._id} className="p-3.5 bg-slate-900/40 border border-slate-800/60 rounded-xl flex flex-col gap-2">
-                    <div className="flex justify-between items-start">
-                      <div className="min-w-0 flex-1 pr-2">
-                        <h4 className="font-bold text-slate-100 text-sm truncate">{tx.title}</h4>
-                        <span className="text-[10px] text-slate-500 font-mono mt-0.5 block">{formatDate(tx.date)}</span>
-                      </div>
-                      <div className={`text-base font-black shrink-0 ${typeColor}`}>
-                        {tx.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(tx.amount)}
-                      </div>
+              // Find Free Spend for current account
+              const freeSpendCategory = accCategories.find(c => {
+                const nameMatch = c.name && c.name.toLowerCase().includes('free spend');
+                const roleMatch = c.systemRole === 'b1_free_spend' || c.systemRole === 'b2_free_spend';
+                return nameMatch || roleMatch;
+              });
+              const accountFreeSpend = freeSpendCategory ? (freeSpendCategory.currentAllocatedBalance || 0) : 0;
+              const accountBase = (acc.actualBankBalance || 0) - accountFreeSpend;
+
+              return (
+                <div key={acc._id} className="glass-panel p-4 sm:p-6 relative overflow-hidden group flex flex-col justify-between">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-300"></div>
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-400 uppercase bg-slate-950/60 px-2.5 py-1 rounded-full border border-slate-800">
+                        {acc.type === 'INCOME_VAULT' ? 'Bank 1 (Income Vault)' : 'Bank 2 (Expense Wallet)'}
+                      </span>
+                      <Wallet className="w-5 h-5 text-indigo-400" />
                     </div>
-                    
-                    <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800/40">
-                      <span className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${
-                        tx.type === 'INCOME' ? 'bg-emerald-500/10' : tx.type === 'EXPENSE' ? 'bg-red-500/10' : 'bg-indigo-500/10'
-                      } ${typeColor}`}>
-                        {tx.type}
-                      </span>
-                      <span className="text-slate-400 text-[10px] font-medium truncate max-w-[180px]">
-                        {tx.sourceCategory ? tx.sourceCategory.name : '—'} &rarr; {tx.destCategory ? tx.destCategory.name : '—'}
-                      </span>
+                    <h3 className="text-xs sm:text-sm font-semibold text-slate-400">{acc.name}</h3>
+                    <div className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">
+                      {formatCurrency(calculatedBankTotal)}
+                    </div>
+                    <div className="text-sm text-indigo-300 mt-2 font-medium bg-slate-800/50 inline-block px-3 py-1 rounded-md">
+                      Base : {formatCurrency(accountBase)}
+                    </div>
+
+                    {/* Visual Breakdown of Internal Buckets */}
+                    <div className="mt-6 border-t border-slate-850 pt-4 space-y-2 relative z-10">
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Internal Buckets</h4>
+                      </div>
+                      {accCategories.length === 0 ? (
+                        <p className="text-xs text-slate-650 italic">No buckets mapped to this bank.</p>
+                      ) : (
+                        accCategories.map(cat => {
+                          const isEditing = editingBucketId === cat._id;
+                          return (
+                            <div key={cat._id} className="flex justify-between items-center text-xs py-1.5 px-2.5 rounded-lg bg-slate-950/40 border border-slate-800/40">
+                              {isEditing ? (
+                                <div className="flex flex-col gap-2 w-full py-1">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={editBucketName}
+                                      onChange={e => setEditBucketName(e.target.value)}
+                                      className="bg-slate-900 border border-slate-700 text-white rounded px-2 py-0.5 w-full text-xs focus:outline-none focus:border-indigo-500"
+                                      autoFocus
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2 text-slate-300">
+                                    <input
+                                      type="checkbox"
+                                      id={`edit-hasTarget-${cat._id}`}
+                                      checked={editBucketHasTarget}
+                                      onChange={e => {
+                                        setEditBucketHasTarget(e.target.checked);
+                                        if (!e.target.checked) setEditBucketTargetGoal('');
+                                      }}
+                                      className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                                    />
+                                    <label htmlFor={`edit-hasTarget-${cat._id}`} className="text-[10px] font-semibold select-none cursor-pointer">
+                                      Set a savings target
+                                    </label>
+                                  </div>
+                                  {editBucketHasTarget && (
+                                    <div>
+                                      <input
+                                        type="number"
+                                        placeholder="Target Goal (₹)"
+                                        value={editBucketTargetGoal}
+                                        onChange={e => setEditBucketTargetGoal(e.target.value)}
+                                        className="bg-slate-900 border border-slate-700 text-white rounded px-2 py-0.5 w-full text-xs focus:outline-none focus:border-indigo-500"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex justify-end gap-2 pt-1 border-t border-slate-800/60">
+                                    <button
+                                      onClick={() => setEditingBucketId(null)}
+                                      className="text-slate-400 hover:text-slate-350 font-bold px-2 py-0.5 text-xs"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => handleSaveInlineEdit(cat._id)}
+                                      className="text-emerald-400 hover:text-emerald-350 font-bold px-2 py-0.5 text-xs"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-slate-200">{cat.name}</span>
+                                    {cat.isPermanent && (
+                                      <span className="text-[9px] bg-indigo-500/15 text-indigo-300 font-bold px-1.5 py-0.5 rounded border border-indigo-500/20">
+                                        System
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {(() => {
+                                      const balance = Number(cat.currentAllocatedBalance) || 0;
+                                      const target = Number(cat.targetGoal) || 0;
+                                      return cat.hasTarget ? (
+                                        <span className={`font-bold ${balance < target ? 'text-red-400' : 'text-green-400'}`}>
+                                          {formatCurrency(balance)} / {formatCurrency(target)}
+                                        </span>
+                                      ) : (
+                                        <span className="font-bold text-slate-100">{formatCurrency(balance)}</span>
+                                      );
+                                    })()}
+                                    <div className="flex items-center gap-1.5 opacity-65 hover:opacity-100 transition-opacity">
+                                      <button
+                                        onClick={() => {
+                                          setEditingBucketId(cat._id);
+                                          setEditBucketName(cat.name);
+                                          setEditBucketHasTarget(cat.hasTarget || false);
+                                          setEditBucketTargetGoal(cat.targetGoal || '');
+                                        }}
+                                        className="text-indigo-400 hover:text-indigo-300 text-[10px] font-bold"
+                                        title="Edit bucket name"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                                        className="text-slate-500 hover:text-red-400"
+                                        title={`Delete ${cat.name}`}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+
+                      {/* Add Inline Custom Bucket Form */}
+                      {addingBucketAccountId === acc._id ? (
+                        <div className="mt-2.5 p-3 bg-slate-900/60 border border-slate-800 rounded-lg space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              placeholder="Bucket Name"
+                              value={newBucketName}
+                              onChange={e => setNewBucketName(e.target.value)}
+                              className="bg-slate-950 border border-slate-850 text-white rounded px-2 py-1 w-full text-xs focus:outline-none focus:border-indigo-500"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-300">
+                            <input
+                              type="checkbox"
+                              id={`hasTarget-${acc._id}`}
+                              checked={newBucketHasTarget}
+                              onChange={e => {
+                                setNewBucketHasTarget(e.target.checked);
+                                if (!e.target.checked) setNewBucketTargetGoal('');
+                              }}
+                              className="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                            />
+                            <label htmlFor={`hasTarget-${acc._id}`} className="text-[10px] font-semibold select-none cursor-pointer">
+                              Set a savings target
+                            </label>
+                          </div>
+                          {newBucketHasTarget && (
+                            <div>
+                              <input
+                                type="number"
+                                placeholder="Target Goal (₹)"
+                                value={newBucketTargetGoal}
+                                onChange={e => setNewBucketTargetGoal(e.target.value)}
+                                className="bg-slate-950 border border-slate-850 text-white rounded px-2 py-1 w-full text-xs focus:outline-none focus:border-indigo-500"
+                              />
+                            </div>
+                          )}
+                          <div className="flex justify-end gap-2 pt-1 border-t border-slate-800/60">
+                            <button
+                              onClick={() => setAddingBucketAccountId(null)}
+                              className="text-slate-400 hover:text-slate-200 text-xs font-semibold px-2 py-1"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleCreateInlineBucket(acc._id, acc.type)}
+                              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setAddingBucketAccountId(acc._id);
+                            setNewBucketName('');
+                            setNewBucketHasTarget(false);
+                            setNewBucketTargetGoal('');
+                          }}
+                          className="w-full mt-2 py-1.5 border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/10 hover:bg-slate-900/40 text-slate-400 hover:text-slate-300 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" /> Add Custom Bucket
+                        </button>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Split Layout: Categories & Cumulative savings */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {/* Left Side: Targets & Categories (2/3 width) */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-indigo-400" /> Category Budgets
+                </h2>
+              </div>
+
+              {loading ? (
+                <div className="glass-panel p-12 text-center text-slate-400">
+                  <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-indigo-500" />
+                  Loading cycle records...
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expenseCategories.map(cat => {
+                    const spent = getCategorySpending(cat._id);
+                    const limit = cat.monthlyBudgetLimit;
+                    const percent = limit > 0 ? (spent / limit) * 100 : 0;
+
+                    // Determine styling classes based on budget conditions
+                    const isOverBudget = spent > limit;
+
+                    // USER SPECIFIED CLASSES FOR OVER/UNDER LIMIT
+                    const indicatorClasses = isOverBudget
+                      ? 'text-red-600 bg-red-50 border-red-500'
+                      : 'text-green-600 bg-green-50 border-green-500';
+
+                    return (
+                      <div
+                        key={cat._id}
+                        className={`p-4 sm:p-5 rounded-xl border flex flex-col justify-between transition-all duration-300 ${indicatorClasses}`}
+                      >
+                        <div>
+                          <div className="flex justify-between items-start mb-2 gap-2">
+                            <span className="font-bold text-sm sm:text-base leading-tight">{cat.name}</span>
+                            <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-black/5 shrink-0">
+                              Limit: {formatCurrency(limit)}
+                            </span>
+                          </div>
+
+                          <div className="text-xl sm:text-2xl font-extrabold tracking-tight mb-3">
+                            {formatCurrency(spent)} <span className="text-xs font-normal opacity-85">spent</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          {/* Progress Bar */}
+                          <div className="w-full bg-black/10 rounded-full h-2 mb-2 overflow-hidden">
+                            <div
+                              className={`h-2 rounded-full transition-all duration-500 ${isOverBudget ? 'bg-red-600' : 'bg-green-600'}`}
+                              style={{ width: `${Math.min(100, percent)}%` }}
+                            ></div>
+                          </div>
+
+                          <div className="flex justify-between text-[11px] font-semibold opacity-85">
+                            <span>{percent.toFixed(0)}% Cap</span>
+                            <span>
+                              {isOverBudget
+                                ? `Over by ${formatCurrency(spent - limit)}`
+                                : `Left: ${formatCurrency(limit - spent)}`
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Desktop Table (Hidden on mobile) */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                    <th className="py-3 px-4">Title</th>
-                    <th className="py-3 px-4">Type</th>
-                    <th className="py-3 px-4">From Bucket</th>
-                    <th className="py-3 px-4">To Bucket</th>
-                    <th className="py-3 px-4">Accounts Involved</th>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-sm">
+            {/* Right Side: Category Manager (1/3 width) */}
+            <div>
+              <div className="glass-panel p-4 sm:p-6 h-full flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none"></div>
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                      <Layers className="w-5 h-5 text-purple-400" /> Category Manager
+                    </h2>
+                  </div>
+
+                  {/* List of Categories in Manager */}
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                    {categories.filter(c => c.modelType === 'EXPENSE_TRACKER').map(cat => {
+                      const isPermanent = cat.isPermanent;
+                      return (
+                        <div key={cat._id} className={`p-4 border rounded-xl transition-all duration-300 ${isPermanent ? 'border-slate-800 bg-slate-900/30' : 'border-indigo-500/20 bg-indigo-950/5'
+                          }`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-bold text-sm text-slate-200 block">{cat.name}</span>
+                              <span className="text-[10px] text-slate-400 uppercase font-mono block">
+                                Type: {cat.type} | {isPermanent ? 'Permanent' : 'Custom'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleStartEdit(cat)}
+                                className="text-indigo-400 hover:text-indigo-300 p-1 rounded text-xs transition-colors font-bold"
+                                title="Edit"
+                              >
+                                Edit
+                              </button>
+                              {!isPermanent && (
+                                <button
+                                  onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                                  className="text-slate-500 hover:text-red-400 p-1 rounded transition-colors"
+                                  title={`Delete ${cat.name}`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {cat.monthlyBudgetLimit > 0 && (
+                            <div className="text-xs text-slate-400 mt-1 font-semibold">
+                              Limit: {formatCurrency(cat.monthlyBudgetLimit)}
+                            </div>
+                          )}
+                          {cat.targetGoal > 0 && (
+                            <div className="text-xs text-slate-400 mt-1 font-semibold">
+                              Goal: {formatCurrency(cat.targetGoal)}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <button
+                    onClick={() => setShowAddCategoryModal(true)}
+                    className="w-full bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-650 hover:to-indigo-650 text-white font-bold text-base sm:text-sm h-12 rounded-xl transition-all duration-200"
+                  >
+                    + Add Custom Category
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Transaction History Table */}
+          <div className="glass-panel p-4 sm:p-6 mt-8">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white mb-6 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-indigo-400" /> Transaction Stream for Cycle
+            </h2>
+
+            {transactions.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                No transactions found in this billing cycle.
+              </div>
+            ) : (
+              <>
+                {/* Mobile Stacked Summary List (Visible only on mobile) */}
+                <div className="space-y-3 sm:hidden">
                   {transactions.map(tx => {
                     let typeColor = 'text-indigo-400';
                     if (tx.type === 'INCOME') typeColor = 'text-emerald-400';
                     if (tx.type === 'EXPENSE') typeColor = 'text-red-400';
 
                     return (
-                      <tr key={tx._id} className="hover:bg-slate-900/30 transition-colors">
-                        <td className="py-3 px-4 font-bold text-slate-100">{tx.title}</td>
-                        <td className="py-3 px-4">
-                          <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${
-                            tx.type === 'INCOME' ? 'bg-emerald-500/10' : tx.type === 'EXPENSE' ? 'bg-red-500/10' : 'bg-indigo-500/10'
-                          } ${typeColor}`}>
+                      <div key={tx._id} className="p-3.5 bg-slate-900/40 border border-slate-800/60 rounded-xl flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <div className="min-w-0 flex-1 pr-2">
+                            <h4 className="font-bold text-slate-100 text-sm truncate">{tx.title}</h4>
+                            <span className="text-[10px] text-slate-500 font-mono mt-0.5 block">{formatDate(tx.date)}</span>
+                          </div>
+                          <div className={`text-base font-black shrink-0 ${typeColor}`}>
+                            {tx.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(tx.amount)}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-800/40">
+                          <span className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${tx.type === 'INCOME' ? 'bg-emerald-500/10' : tx.type === 'EXPENSE' ? 'bg-red-500/10' : 'bg-indigo-500/10'
+                            } ${typeColor}`}>
                             {tx.type}
                           </span>
-                        </td>
-                        <td className="py-3 px-4 text-slate-300 font-medium">
-                          {tx.sourceCategory ? tx.sourceCategory.name : <span className="text-slate-600">&mdash;</span>}
-                        </td>
-                        <td className="py-3 px-4 text-slate-300 font-medium">
-                          {tx.destCategory ? tx.destCategory.name : <span className="text-slate-600">&mdash;</span>}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 text-xs">
-                          {tx.sourceAccount && tx.destAccount 
-                            ? `${tx.sourceAccount.name} → ${tx.destAccount.name}`
-                            : tx.sourceAccount 
-                              ? tx.sourceAccount.name 
-                              : tx.destAccount 
-                                ? tx.destAccount.name 
-                                : <span className="text-slate-600">Virtual Category only</span>
-                          }
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 text-xs font-mono">{formatDate(tx.date)}</td>
-                        <td className={`py-3 px-4 text-right font-black text-base ${typeColor}`}>
-                          {tx.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(tx.amount)}
-                        </td>
-                      </tr>
+                          <span className="text-slate-400 text-[10px] font-medium truncate max-w-[180px]">
+                            {tx.sourceCategory ? tx.sourceCategory.name : '—'} &rarr; {tx.destCategory ? tx.destCategory.name : '—'}
+                          </span>
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-      </div>
-      </>
+                </div>
+
+                {/* Desktop Table (Hidden on mobile) */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                        <th className="py-3 px-4">Title</th>
+                        <th className="py-3 px-4">Type</th>
+                        <th className="py-3 px-4">From Bucket</th>
+                        <th className="py-3 px-4">To Bucket</th>
+                        <th className="py-3 px-4">Accounts Involved</th>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 text-sm">
+                      {transactions.map(tx => {
+                        let typeColor = 'text-indigo-400';
+                        if (tx.type === 'INCOME') typeColor = 'text-emerald-400';
+                        if (tx.type === 'EXPENSE') typeColor = 'text-red-400';
+
+                        return (
+                          <tr key={tx._id} className="hover:bg-slate-900/30 transition-colors">
+                            <td className="py-3 px-4 font-bold text-slate-100">{tx.title}</td>
+                            <td className="py-3 px-4">
+                              <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md ${tx.type === 'INCOME' ? 'bg-emerald-500/10' : tx.type === 'EXPENSE' ? 'bg-red-500/10' : 'bg-indigo-500/10'
+                                } ${typeColor}`}>
+                                {tx.type}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-slate-300 font-medium">
+                              {tx.sourceCategory ? tx.sourceCategory.name : <span className="text-slate-600">&mdash;</span>}
+                            </td>
+                            <td className="py-3 px-4 text-slate-300 font-medium">
+                              {tx.destCategory ? tx.destCategory.name : <span className="text-slate-600">&mdash;</span>}
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 text-xs">
+                              {tx.sourceAccount && tx.destAccount
+                                ? `${tx.sourceAccount.name} → ${tx.destAccount.name}`
+                                : tx.sourceAccount
+                                  ? tx.sourceAccount.name
+                                  : tx.destAccount
+                                    ? tx.destAccount.name
+                                    : <span className="text-slate-600">Virtual Category only</span>
+                              }
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 text-xs font-mono">{formatDate(tx.date)}</td>
+                            <td className={`py-3 px-4 text-right font-black text-base ${typeColor}`}>
+                              {tx.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(tx.amount)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        </>
       ) : (
         <AnalyticsDashboard />
       )}
@@ -1042,17 +1037,17 @@ export default function Dashboard() {
           <div className="bg-slate-900 border-t sm:border border-slate-800 w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
             {/* Visual Drag Handle for Mobile bottom sheet */}
             <div className="w-12 h-1.5 bg-slate-800 rounded-full mx-auto my-3 sm:hidden shrink-0" />
-            
+
             <div className="p-4 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
               <h3 className="text-base sm:text-lg font-bold text-white">Record Transaction</h3>
-              <button 
+              <button
                 onClick={() => setShowTxModal(false)}
                 className="text-slate-400 hover:text-white font-bold text-lg p-1"
               >
                 &times;
               </button>
             </div>
-            
+
             <form onSubmit={handleTxSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[75vh]">
               {/* Type Select */}
               <div>
@@ -1063,11 +1058,10 @@ export default function Dashboard() {
                       key={t}
                       type="button"
                       onClick={() => setTxForm(prev => ({ ...prev, type: t, sourceCategory: '', destCategory: '' }))}
-                      className={`h-12 px-3 rounded-lg font-bold text-sm sm:text-xs border text-center transition-all ${
-                        txForm.type === t 
+                      className={`h-12 px-3 rounded-lg font-bold text-sm sm:text-xs border text-center transition-all ${txForm.type === t
                           ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/10'
                           : 'bg-slate-800 border-slate-800 text-slate-400 hover:text-slate-200'
-                      }`}
+                        }`}
                     >
                       {t}
                     </button>
@@ -1156,9 +1150,9 @@ export default function Dashboard() {
                             {accBuckets.map(c => {
                               const isInsufficient = txForm.amount && c.currentAllocatedBalance < Number(txForm.amount);
                               return (
-                                <option 
-                                  key={c._id} 
-                                  value={c._id} 
+                                <option
+                                  key={c._id}
+                                  value={c._id}
                                   disabled={isInsufficient}
                                 >
                                   {c.name} (Available: {formatCurrency(c.currentAllocatedBalance)}) {isInsufficient ? '[INSUFFICIENT FUNDS]' : ''}
@@ -1271,11 +1265,10 @@ export default function Dashboard() {
                 <button
                   type="submit"
                   disabled={isTxFormInvalid()}
-                  className={`w-full font-bold text-base sm:text-sm h-12 rounded-lg shadow-lg transition-all ${
-                    isTxFormInvalid()
+                  className={`w-full font-bold text-base sm:text-sm h-12 rounded-lg shadow-lg transition-all ${isTxFormInvalid()
                       ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
                       : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white active:scale-95'
-                  }`}
+                    }`}
                 >
                   Record
                 </button>
@@ -1295,17 +1288,17 @@ export default function Dashboard() {
           <div className="bg-slate-900 border-t sm:border border-slate-800 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
             {/* Visual Drag Handle for Mobile bottom sheet */}
             <div className="w-12 h-1.5 bg-slate-800 rounded-full mx-auto my-3 sm:hidden shrink-0" />
-            
+
             <div className="p-4 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
               <h3 className="text-base sm:text-lg font-bold text-white">Create Expense Category Tracker</h3>
-              <button 
+              <button
                 onClick={() => setShowAddCategoryModal(false)}
                 className="text-slate-400 hover:text-white font-bold text-lg p-1"
               >
                 &times;
               </button>
             </div>
-            
+
             <form onSubmit={handleAddCategorySubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[75vh]">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Category Name</label>
@@ -1352,17 +1345,17 @@ export default function Dashboard() {
           <div className="bg-slate-900 border-t sm:border border-slate-800 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
             {/* Visual Drag Handle for Mobile bottom sheet */}
             <div className="w-12 h-1.5 bg-slate-800 rounded-full mx-auto my-3 sm:hidden shrink-0" />
-            
+
             <div className="p-4 sm:p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
               <h3 className="text-base sm:text-lg font-bold text-white">Edit Category: {editingCategory.name}</h3>
-              <button 
+              <button
                 onClick={() => setEditingCategory(null)}
                 className="text-slate-400 hover:text-white font-bold text-lg p-1"
               >
                 &times;
               </button>
             </div>
-            
+
             <form onSubmit={handleEditCategorySubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[75vh]">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Category Name</label>
