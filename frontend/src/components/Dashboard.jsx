@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import {
   TrendingUp,
   TrendingDown,
@@ -18,8 +18,6 @@ import {
 } from 'lucide-react';
 import { getBillingCycleRange, getCycleString } from '../utils/cycleHelper';
 import AnalyticsDashboard from './AnalyticsDashboard';
-
-const API_BASE = 'http://localhost:5000/api';
 
 const getLocalDateString = () => {
   const d = new Date();
@@ -136,19 +134,19 @@ export default function Dashboard() {
     setError(null);
     try {
       // 1. Fetch Accounts with cycleString query parameter
-      const accountsRes = await axios.get(`${API_BASE}/accounts`, {
+      const accountsRes = await api.get('/accounts', {
         params: { cycleString: currentCycleString }
       });
       setAccounts(accountsRes.data);
 
       // 2. Fetch Categories with cycleString query parameter
-      const categoriesRes = await axios.get(`${API_BASE}/categories`, {
+      const categoriesRes = await api.get('/categories', {
         params: { cycleString: currentCycleString }
       });
       setCategories(categoriesRes.data);
 
       // 3. Fetch Transactions for the cycle
-      const txRes = await axios.get(`${API_BASE}/transactions`, {
+      const txRes = await api.get('/transactions', {
         params: { cycleString: currentCycleString }
       });
       setTransactions(txRes.data);
@@ -207,7 +205,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const res = await axios.post(`${API_BASE}/cycles/rollover`, {
+      const res = await api.post('/cycles/rollover', {
         cycleString: currentCycleString
       });
       triggerToast(`Rollover complete! Swept ${formatCurrency(res.data.totalSweptAmount)} into Bank 2 Free Spend.`);
@@ -236,7 +234,7 @@ export default function Dashboard() {
 
       console.log("Sending Payload:", payload);
 
-      await axios.post(`${API_BASE}/transactions`, payload);
+      await api.post('/transactions', payload);
       triggerToast('Transaction posted successfully!');
       setShowTxModal(false);
       // Reset Form
@@ -258,7 +256,7 @@ export default function Dashboard() {
   const handleAddCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE}/categories`, {
+      await api.post('/categories', {
         name: newCatForm.name,
         type: 'EXPENSE',
         modelType: 'EXPENSE_TRACKER',
@@ -280,7 +278,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      await axios.put(`${API_BASE}/categories/${catId}`, {
+      await api.put(`/categories/${catId}`, {
         name: editBucketName,
         hasTarget: editBucketHasTarget,
         targetGoal: editBucketHasTarget ? (Number(editBucketTargetGoal) || 0) : 0
@@ -301,7 +299,7 @@ export default function Dashboard() {
     }
     try {
       const type = accType === 'INCOME_VAULT' ? 'INCOME' : 'EXPENSE';
-      await axios.post(`${API_BASE}/categories`, {
+      await api.post('/categories', {
         name: newBucketName,
         type,
         modelType: 'BUCKET',
@@ -324,7 +322,7 @@ export default function Dashboard() {
   const handleEditCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_BASE}/categories/${editingCategory._id}`, {
+      await api.put(`/categories/${editingCategory._id}`, {
         name: editForm.name,
         monthlyBudgetLimit: Number(editForm.monthlyBudgetLimit) || 0,
         targetGoal: Number(editForm.targetGoal) || 0
@@ -343,7 +341,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const res = await axios.delete(`${API_BASE}/categories/${id}`);
+      const res = await api.delete(`/categories/${id}`);
       triggerToast(res.data.message || 'Category deleted and swept.');
       fetchData();
     } catch (err) {
@@ -366,7 +364,7 @@ export default function Dashboard() {
   const handleRedistributeSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE}/subbuckets/redistribute`, {
+      await api.post('/subbuckets/redistribute', {
         amount: Number(redistributeForm.amount),
         sourceTag: redistributeForm.sourceTag,
         destTag: redistributeForm.destTag
@@ -384,7 +382,7 @@ export default function Dashboard() {
   const handleGoalSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE}/categories`, {
+      await api.post('/categories', {
         name: goalForm.name,
         targetGoal: Number(goalForm.targetGoal)
       });
@@ -403,7 +401,7 @@ export default function Dashboard() {
       return;
     }
     try {
-      const res = await axios.delete(`${API_BASE}/categories/${id}`);
+      const res = await api.delete(`/categories/${id}`);
       triggerToast(res.data.message || 'Savings bucket deleted and swept.');
       fetchData();
     } catch (err) {

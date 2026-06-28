@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -11,8 +11,6 @@ import {
 } from 'lucide-react';
 import { getBillingCycleRange, getCycleString } from '../utils/cycleHelper';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-
-const API_BASE = 'http://localhost:5000/api';
 
 const INCOME_COLORS = ['#0f766e', '#0d9488', '#14b8a6', '#2dd4bf', '#5eead4', '#059669', '#10b981', '#34d399'];
 const EXPENSE_COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4'];
@@ -93,7 +91,7 @@ export default function AnalyticsDashboard() {
         params.endDate = customEndDate;
       }
 
-      const res = await axios.get(`${API_BASE}/analytics/report`, { params });
+      const res = await api.get('/analytics/report', { params });
       setReportData(res.data);
     } catch (err) {
       console.error(err);
