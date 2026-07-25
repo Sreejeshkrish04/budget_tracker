@@ -10,7 +10,6 @@ import { getCycleString } from './utils/cycleHelper.js';
 import { getTransactions, postTransaction } from './controllers/transactionController.js';
 import { bankToBankTransfer } from './controllers/transferController.js';
 import { executeRollover, redistributeSubBuckets } from './controllers/cycleController.js';
-import { initCycleCron } from './cron/cycleAutomation.js';
 import { getAnalyticsReport } from './controllers/analyticsController.js';
 
 dotenv.config();
@@ -26,8 +25,7 @@ app.use(express.json());
 // Connect to Database
 connectDB();
 
-// Initialize automatic rollover sweep cron
-initCycleCron();
+
 
 // Graceful transaction runner that falls back to standard execution if replica sets are not configured
 async function executeTransaction(callback) {
